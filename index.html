@@ -1,0 +1,2603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meteonews</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --sky:#0B3D6B;
+  --sky2:#0E4F8A;
+  --sky3:#1A6BAD;
+  --ice:#E8F4FD;
+  --ice2:#D0E8F8;
+  --cloud:#F5F9FD;
+  --white:#FFFFFF;
+  --cyan:#00B4D8;
+  --cyan2:#48CAE4;
+  --storm:#1B2A3B;
+  --text:#1E3448;
+  --gray:#607D8B;
+  --border:#C5DCF0;
+  --border2:#A8CCE8;
+  --gold:#F4A826;
+  --red:#D32F2F;
+  --green:#2E7D32;
+  --shadow:0 2px 12px rgba(11,61,107,.10);
+  --shadow-lg:0 8px 36px rgba(11,61,107,.18);
+  --radius:6px;
+  --font-serif:'Playfair Display',Georgia,serif;
+  --font-sans:'Inter',system-ui,sans-serif;
+  --tr:.18s ease;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);color:var(--text);background:var(--cloud);font-size:16px;line-height:1.6}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--font-sans);cursor:pointer;border:none;background:none}
+
+.badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 10px;border-radius:3px;background:var(--cyan);color:var(--storm)}
+.badge.outline{background:transparent;border:1.5px solid rgba(255,255,255,.5);color:#fff}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:var(--radius);font-size:13.5px;font-weight:500;transition:all var(--tr)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{background:var(--cyan);color:var(--storm)}
+.btn-primary:hover{background:var(--cyan2)}
+.btn-outline{background:transparent;color:var(--sky);border:1.5px solid var(--border2)}
+.btn-outline:hover{border-color:var(--sky);background:var(--ice)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.25)}
+.btn-ghost:hover{background:rgba(255,255,255,.22)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{opacity:.85}
+.btn-sm{padding:6px 14px;font-size:12.5px}
+
+/* TOPBAR */
+.topbar{background:var(--storm);color:rgba(255,255,255,.55);font-size:12px;padding:6px 0;border-bottom:1px solid rgba(0,180,216,.2)}
+.topbar-inner{max-width:1280px;margin:0 auto;padding:0 20px;display:flex;justify-content:space-between;align-items:center}
+.topbar-live{display:flex;align-items:center;gap:8px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.topbar-actions{display:flex;gap:16px}
+.topbar-actions button{color:rgba(255,255,255,.6);font-size:12px;border-bottom:1px solid transparent;transition:all var(--tr)}
+.topbar-actions button:hover{color:var(--cyan);border-color:var(--cyan)}
+
+/* WEATHER STRIP */
+.weather-strip{background:linear-gradient(135deg,var(--sky) 0%,var(--sky3) 100%);padding:8px 0;border-bottom:2px solid rgba(0,180,216,.3)}
+.weather-strip-inner{max-width:1280px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:24px;overflow-x:auto;scrollbar-width:none}
+.weather-strip-inner::-webkit-scrollbar{display:none}
+.weather-city{display:flex;align-items:center;gap:8px;flex-shrink:0;padding:2px 14px;border-right:1px solid rgba(255,255,255,.12)}
+.weather-city:last-child{border-right:none}
+.weather-icon{font-size:18px;min-width:22px;text-align:center}
+.weather-info{line-height:1.2}
+.weather-name{font-size:11px;color:rgba(255,255,255,.6);font-weight:500}
+.weather-temp{font-size:15px;color:#fff;font-weight:700}
+.weather-desc{font-size:10px;color:rgba(255,255,255,.5)}
+.weather-update{flex-shrink:0;font-size:9px;color:rgba(255,255,255,.42);margin-left:auto;white-space:nowrap;padding-left:10px}
+
+/* HEADER */
+.site-header{background:linear-gradient(180deg,var(--sky) 0%,var(--sky2) 100%);position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(11,61,107,.35)}
+.header-top-line{height:3px;background:linear-gradient(90deg,var(--cyan),#90E0EF,var(--cyan))}
+.header-brand{max-width:1280px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:70px}
+.brand-left{display:flex;align-items:center;gap:16px}
+.brand-icon{font-size:36px;filter:drop-shadow(0 2px 8px rgba(0,180,216,.5))}
+.brand-name{font-family:var(--font-serif);font-size:26px;font-weight:900;color:#fff;letter-spacing:-.01em;line-height:1}
+.brand-name span{color:var(--cyan)}
+.brand-tagline{font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:10px}
+.search-bar{display:flex;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius);padding:6px 12px;gap:8px}
+.search-bar input{background:none;border:none;outline:none;color:#fff;font-size:13px;width:150px}
+.search-bar input::placeholder{color:rgba(255,255,255,.4)}
+
+/* NAV */
+.site-nav{background:rgba(11,61,107,.95);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.08)}
+.nav-inner{max-width:1280px;margin:0 auto;padding:0 20px;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-item{flex-shrink:0;padding:11px 15px;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;border-bottom:2px solid transparent;cursor:pointer;transition:all var(--tr);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.nav-item:hover{color:#fff}
+.nav-item.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+/* ADMIN */
+.admin-mode-banner{background:var(--cyan);color:var(--storm);text-align:center;font-size:13px;font-weight:600;padding:7px;display:none}
+.admin-mode-banner.visible{display:block}
+
+/* HERO */
+.hero-section{max-width:1280px;margin:0 auto;padding:28px 20px 0}
+.hero-grid{display:grid;grid-template-columns:1fr 340px;grid-template-rows:auto auto;gap:3px;background:var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-lg)}
+.hero-main{grid-row:span 2;position:relative;min-height:440px;background:var(--sky);cursor:pointer;overflow:hidden}
+.hero-main img{width:100%;height:100%;object-fit:cover;opacity:.75;transition:transform .45s ease,opacity .3s}
+.hero-main:hover img{transform:scale(1.04);opacity:.65}
+.hero-main-content{position:absolute;bottom:0;left:0;right:0;padding:30px;background:linear-gradient(to top,rgba(11,61,107,.97) 40%,transparent)}
+.hero-main-content .badge{margin-bottom:10px}
+.hero-main-content h2{font-family:var(--font-serif);font-size:clamp(22px,3vw,34px);font-weight:700;color:#fff;line-height:1.2;margin-bottom:10px}
+.hero-main-content p{color:rgba(255,255,255,.7);font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hero-meta{display:flex;align-items:center;gap:10px;margin-top:14px;color:rgba(255,255,255,.5);font-size:12px}
+.hero-side{background:var(--white);padding:20px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;border-left:3px solid var(--ice2);transition:background var(--tr)}
+.hero-side:hover{background:var(--ice)}
+.hero-side .badge{margin-bottom:8px;background:var(--ice2);color:var(--sky);align-self:flex-start}
+.hero-side h3{font-family:var(--font-serif);font-size:17px;font-weight:700;line-height:1.3;color:var(--storm);margin-bottom:8px}
+.hero-side p{font-size:13px;color:var(--gray);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hero-side-meta{font-size:12px;color:var(--gray);margin-top:10px}
+
+/* CONTENT */
+.content-wrapper{max-width:1280px;margin:0 auto;padding:28px 20px 60px;display:grid;grid-template-columns:1fr 300px;gap:32px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--sky)}
+.section-header h2{font-family:var(--font-serif);font-size:22px;font-weight:700;color:var(--sky);display:flex;align-items:center;gap:10px}
+.section-header h2::before{content:'';display:block;width:4px;height:24px;background:var(--cyan);border-radius:2px}
+
+/* CARDS */
+.articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.article-card{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border-top:3px solid transparent;transition:box-shadow var(--tr),transform var(--tr),border-color var(--tr);display:flex;flex-direction:column;cursor:pointer}
+.article-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px);border-top-color:var(--cyan)}
+.card-image{height:180px;overflow:hidden;position:relative;background:var(--ice)}
+.card-image img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.article-card:hover .card-image img{transform:scale(1.06)}
+.card-image-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:52px;background:linear-gradient(135deg,var(--sky) 0%,var(--sky3) 100%)}
+.card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}
+.card-category{font-size:11px;font-weight:600;color:var(--sky3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.card-category::before{content:'';width:14px;height:2px;background:var(--cyan);border-radius:1px;display:inline-block}
+.card-title{font-family:var(--font-serif);font-size:18px;font-weight:700;line-height:1.28;color:var(--storm);margin-bottom:10px;flex:1}
+.card-excerpt{font-size:13.5px;color:var(--gray);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:14px}
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--gray)}
+.card-author{display:flex;align-items:center;gap:6px}
+.card-avatar{width:24px;height:24px;border-radius:50%;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--cyan);font-weight:700}
+.card-admin-actions{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+
+/* SIDEBAR */
+.sidebar{display:flex;flex-direction:column;gap:24px}
+.sidebar-widget{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border-top:3px solid var(--cyan)}
+.widget-title{font-family:var(--font-serif);font-size:17px;font-weight:700;color:var(--sky);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.trending-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity var(--tr)}
+.trending-item:last-child{border-bottom:none}
+.trending-item:hover{opacity:.72}
+.trending-num{font-size:24px;font-weight:700;font-family:var(--font-serif);color:var(--ice2);line-height:1;min-width:28px}
+.trending-text h4{font-size:14px;font-weight:600;line-height:1.3;color:var(--storm);margin-bottom:4px}
+.trending-text span{font-size:12px;color:var(--gray)}
+
+/* WEATHER WIDGET */
+.weather-widget{background:linear-gradient(135deg,var(--sky) 0%,var(--sky3) 100%);border-radius:var(--radius);padding:20px;color:#fff;box-shadow:var(--shadow-lg)}
+.weather-widget-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:16px}
+.weather-main-temp{font-size:52px;font-weight:300;line-height:1;color:#fff}
+.weather-main-temp sup{font-size:24px;font-weight:400}
+.weather-main-desc{font-size:15px;color:rgba(255,255,255,.8);margin:6px 0 16px}
+.weather-details{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.weather-detail-item{background:rgba(255,255,255,.1);border-radius:4px;padding:10px;text-align:center}
+.weather-detail-label{font-size:10px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.weather-detail-value{font-size:16px;font-weight:600;color:#fff}
+.weather-last-update{margin-top:12px;font-size:10px;color:rgba(255,255,255,.45);text-align:center}
+
+/* READER */
+.reader-section{display:none;background:var(--cloud);min-height:70vh;animation:readerIn .22s ease}
+.reader-section.open{display:block}
+@keyframes readerIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+main.reader-open>#heroSection,
+main.reader-open>.content-wrapper{display:none}
+.reader-breadcrumb{background:var(--sky);border-bottom:2px solid var(--cyan)}
+.reader-breadcrumb-inner{max-width:1280px;margin:0 auto;padding:11px 20px;display:flex;align-items:center;gap:10px;font-size:13px}
+.reader-breadcrumb button{color:rgba(255,255,255,.75);font-size:13px;font-weight:500;transition:color var(--tr)}
+.reader-breadcrumb button:hover{color:var(--cyan)}
+.reader-breadcrumb .crumb-sep{color:rgba(255,255,255,.3)}
+.reader-breadcrumb .crumb-cat{color:var(--cyan);font-weight:600}
+.reader-content{max-width:900px;margin:0 auto;padding:40px 20px 80px}
+.reader-category{font-size:12px;font-weight:600;color:var(--sky3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.reader-title{font-family:var(--font-serif);font-size:clamp(28px,5vw,44px);font-weight:900;line-height:1.12;color:var(--storm);margin-bottom:16px}
+.reader-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--gray);margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.reader-image{width:100%;max-height:520px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px;box-shadow:var(--shadow)}
+.reader-body{font-size:18px;line-height:1.78;color:var(--text);font-family:Georgia,'Times New Roman',serif;display:flow-root}
+.reader-body p{margin-bottom:1.4em}
+
+/* INLINE MEDIA (images + YouTube inside article text) */
+.media{margin-top:.35em;margin-bottom:1.1em}
+.media .frame{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--ice)}
+.media img{width:100%;height:auto;display:block}
+.media.video .frame{position:relative;aspect-ratio:16/9;background:#000}
+.media.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.media figcaption{font-family:var(--font-sans);font-size:13px;line-height:1.45;color:var(--gray);margin-top:7px;font-style:italic}
+.media.size-small{width:28%}
+.media.size-medium{width:45%}
+.media.size-large{width:68%}
+.media.size-full{width:100%}
+.media.align-left{float:left;margin-right:1.5em}
+.media.align-right{float:right;margin-left:1.5em}
+.media.align-center{float:none;margin-left:auto;margin-right:auto;clear:both}
+.media.size-full{float:none;clear:both;margin-left:0;margin-right:0}
+.media.size-small.video{min-width:220px}
+
+/* GALLERY */
+.reader-gallery{margin-top:44px;padding-top:28px;border-top:1px solid var(--border);clear:both}
+.reader-gallery-title{font-family:var(--font-serif);font-size:22px;font-weight:700;color:var(--sky);margin-bottom:18px}
+.reader-gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.reader-gallery-item{overflow:hidden;border-radius:var(--radius);background:var(--ice);box-shadow:var(--shadow)}
+.reader-gallery-item img{width:100%;height:300px;object-fit:cover;transition:transform .35s ease}
+.reader-gallery-item:hover img{transform:scale(1.03)}
+.reader-admin{display:flex;gap:10px;margin-top:32px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(11,61,107,.65);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--white);border-radius:10px;width:100%;max-width:680px;box-shadow:0 24px 80px rgba(11,61,107,.28);margin:auto;transform:translateY(16px);transition:transform .22s ease;border-top:4px solid var(--cyan)}
+.modal.wide{max-width:780px}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-header{padding:24px 28px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--ice)}
+.modal-header h3{font-family:var(--font-serif);font-size:22px;font-weight:700;color:var(--sky)}
+.modal-close{width:34px;height:34px;border-radius:50%;background:var(--ice2);color:var(--gray);font-size:20px;display:flex;align-items:center;justify-content:center;transition:all var(--tr)}
+.modal-close:hover{background:var(--border2);color:var(--storm)}
+.modal-body{padding:24px 28px}
+.modal-footer{padding:18px 28px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:var(--ice)}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--sky);margin-bottom:6px}
+.form-group input,
+.form-group textarea,
+.form-group select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:var(--font-sans);font-size:14px;color:var(--text);background:var(--white);transition:border-color var(--tr)}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,180,216,.1)}
+.form-group textarea{resize:vertical;min-height:120px;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-hint{font-size:12px;color:var(--gray);margin-top:5px;font-style:italic}
+
+/* EDITOR TOOLBAR + PREVIEW */
+.editor-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;padding:8px;background:var(--ice);border:1.5px solid var(--border);border-radius:var(--radius)}
+.editor-preview{display:none;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;min-height:200px;max-height:460px;overflow-y:auto;background:var(--white)}
+.editor-preview.reader-body{font-size:16px;line-height:1.7}
+.editor-preview .empty-note{color:var(--gray);font-family:var(--font-sans);font-size:14px;font-style:italic}
+#articleContent{font-family:Georgia,'Times New Roman',serif;font-size:15px}
+
+.settings-section{margin-bottom:28px}
+.settings-section h4{font-size:14px;font-weight:600;color:var(--sky);margin-bottom:14px;padding-bottom:8px;border-bottom:1.5px solid var(--border)}
+.rubrika-list{display:flex;flex-direction:column;gap:8px}
+.rubrika-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--ice);border-radius:var(--radius);font-size:14px;font-weight:500}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:9000;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{background:var(--storm);color:#fff;padding:12px 18px;border-radius:8px;font-size:14px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;transform:translateX(120%);transition:transform .25s ease;pointer-events:all}
+.toast.show{transform:translateX(0)}
+.toast.success::before{content:'✓';color:var(--cyan);font-weight:700}
+.toast.error::before{content:'✕';color:#EF9A9A;font-weight:700}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;color:var(--gray);grid-column:1/-1}
+.empty-state .ei{font-size:52px;margin-bottom:16px;opacity:.3}
+.empty-state h3{font-family:var(--font-serif);font-size:20px;color:var(--storm);margin-bottom:8px}
+.empty-state p{font-size:14px;margin-bottom:20px}
+
+/* FOOTER */
+.site-footer{background:var(--storm);color:rgba(255,255,255,.5);padding:28px 20px;text-align:center}
+.footer-inner{max-width:1280px;margin:0 auto}
+.footer-logo{font-family:var(--font-serif);font-size:22px;font-weight:700;color:#fff;margin-bottom:6px}
+.footer-logo span{color:var(--cyan)}
+.footer-text{font-size:13px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-main{min-height:300px}
+  .hero-side{display:none}
+  .content-wrapper{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .form-row{grid-template-columns:1fr}
+  .search-bar{display:none}
+  .weather-strip-inner{padding:0 12px;gap:8px}
+  .weather-city{padding:2px 10px}
+  .weather-update{display:none}
+  .brand-name{font-size:22px}
+}
+
+@media(max-width:600px){
+  .header-brand{height:58px}
+  .brand-icon{font-size:28px}
+  .hero-section{padding:14px 12px 0}
+  .content-wrapper{padding:16px 12px 40px}
+  .articles-grid{grid-template-columns:1fr}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{border-radius:10px 10px 0 0}
+  .weather-strip{padding:6px 0}
+  .weather-strip-inner{gap:4px}
+  .weather-city{padding:2px 8px}
+  .weather-icon{font-size:16px}
+  .weather-name{font-size:10px}
+  .weather-temp{font-size:14px}
+  .weather-desc{font-size:9px}
+  .reader-image{height:280px}
+  .reader-gallery-grid{grid-template-columns:1fr}
+  .reader-gallery-item img{height:280px}
+  /* on phones, floated media goes full width so text never gets squeezed */
+  .media,.media.size-small,.media.size-medium,.media.size-large{float:none!important;width:100%!important;min-width:0!important;margin-left:0!important;margin-right:0!important}
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+
+<body>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="admin-mode-banner" id="adminBanner">
+  ⛅ Editor mode — you are logged in as administrator
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-live">
+      <div class="live-dot"></div>
+      <span id="currentDate"></span>
+      <span style="color:rgba(0,180,216,.4)">·</span>
+      <span>Slovenia</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="btnAdminToggle">Editor access</button>
+      <button id="btnSettings" style="display:none">⚙ Settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="weather-strip">
+  <div class="weather-strip-inner" id="weatherStrip">
+    <div class="weather-city">
+      <span class="weather-icon">🌦️</span>
+      <div class="weather-info">
+        <div class="weather-name">Loading weather…</div>
+        <div class="weather-temp">—°C</div>
+        <div class="weather-desc">Fetching data</div>
+      </div>
+    </div>
+    <div class="weather-update" id="weatherUpdate">Updating…</div>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="header-top-line"></div>
+
+  <div class="header-brand">
+    <div class="brand-left">
+      <div class="brand-icon">🌦</div>
+      <div class="brand-text">
+        <div class="brand-name" id="brandName" style="cursor:pointer" onclick="closeReader();filterCategory('all',null)">
+          Meteo<span>news</span>
+        </div>
+        <div class="brand-tagline">Weather · Climate · Nature · Science</div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="search-bar">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.5)" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search…">
+      </div>
+      <button class="btn btn-primary" id="btnNewArticle" style="display:none">+ New article</button>
+    </div>
+  </div>
+
+  <nav class="site-nav">
+    <div class="nav-inner" id="navInner">
+      <div class="nav-item active" data-cat="all" onclick="filterCategory('all',this)">🏠 All news</div>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+  <section class="hero-section" id="heroSection"></section>
+
+  <div class="content-wrapper">
+    <div>
+      <div class="section-header">
+        <h2 id="sectionTitle">Latest</h2>
+        <button class="btn btn-outline btn-sm" onclick="refreshArticles()" id="btnRefresh">↺ Refresh</button>
+      </div>
+
+      <div class="articles-grid" id="articlesGrid">
+        <div class="empty-state">
+          <div class="ei">🌦</div>
+          <p>Loading…</p>
+        </div>
+      </div>
+    </div>
+
+    <aside class="sidebar" id="sidebar"></aside>
+  </div>
+
+  <section class="reader-section" id="readerSection">
+    <div class="reader-breadcrumb">
+      <div class="reader-breadcrumb-inner">
+        <button onclick="closeReader()">← Back to homepage</button>
+        <span class="crumb-sep">›</span>
+        <span class="crumb-cat" id="readerCrumbCat"></span>
+      </div>
+    </div>
+    <div class="reader-content" id="readerContent"></div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-logo">Meteo<span>news</span></div>
+    <div class="footer-text">
+      Weather · Climate · Nature · Science
+      &nbsp;·&nbsp;
+      &copy; <span id="footerYear"></span>
+    </div>
+  </div>
+</footer>
+
+<!-- EDITOR -->
+<div class="modal-overlay" id="editorModal">
+  <div class="modal wide">
+
+    <div class="modal-header">
+      <h3 id="editorTitle">New article</h3>
+      <button class="modal-close" onclick="closeModal('editorModal')">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <input type="hidden" id="editingId">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="articleCategory"></select>
+        </div>
+        <div class="form-group">
+          <label>Author</label>
+          <input type="text" id="articleAuthor" placeholder="First Last">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" id="articleTitle" placeholder="Article title…">
+      </div>
+
+      <div class="form-group">
+        <label>Short summary</label>
+        <textarea id="articleExcerpt" rows="2" placeholder="Short intro…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Content *</label>
+
+        <div class="editor-toolbar">
+          <button type="button" class="btn btn-outline btn-sm" onclick="openInsertModal('image')">🖼 Insert image</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="openInsertModal('video')">▶ Insert YouTube video</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btnPreview" onclick="togglePreview()" style="margin-left:auto">👁 Preview</button>
+        </div>
+
+        <textarea id="articleContent" rows="12" placeholder="Write your article here. Put the cursor where you want an image or video, then use the buttons above…"></textarea>
+        <div class="editor-preview reader-body" id="editorPreview"></div>
+
+        <div class="form-hint">
+          Each paragraph is a new line. Place the cursor at the start of a paragraph before inserting media —
+          small/medium/large images and videos aligned left or right will have the text wrap around them.
+          Use “Preview” to see the final look.
+        </div>
+      </div>
+
+      <!-- MAIN PHOTO -->
+      <div class="form-group">
+        <label>Main photo</label>
+        <input type="url" id="articleImage" placeholder="https://…">
+        <div class="form-hint">Photo shown at the top of the article. Recommended: 1200 × 630 px.</div>
+      </div>
+
+      <!-- EXTRA PHOTOS -->
+      <div class="form-group">
+        <label>Additional photos (gallery)</label>
+        <div id="articleImages" style="display:flex;flex-direction:column;gap:10px"></div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="addArticleImageField()" style="margin-top:10px">+ Add photo</button>
+        <div class="form-hint">These photos are shown in a gallery at the end of the article.</div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('editorModal')">Cancel</button>
+      <button class="btn btn-primary" id="btnSaveArticle" onclick="saveArticle()">Publish article</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- INSERT MEDIA -->
+<div class="modal-overlay" id="insertModal">
+  <div class="modal" style="max-width:480px">
+
+    <div class="modal-header">
+      <h3 id="insertTitle">Insert image</h3>
+      <button class="modal-close" onclick="closeModal('insertModal')">×</button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="insertType">
+
+      <div class="form-group">
+        <label id="insertUrlLabel">Image URL *</label>
+        <input type="url" id="insertUrl" placeholder="https://…" onkeydown="if(event.key==='Enter')confirmInsert()">
+        <div class="form-hint" id="insertUrlHint"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Size</label>
+          <select id="insertSize">
+            <option value="small">Small (¼ width)</option>
+            <option value="medium">Medium (½ width)</option>
+            <option value="large">Large (⅔ width)</option>
+            <option value="full">Full width</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Position</label>
+          <select id="insertAlign">
+            <option value="left">Left — text wraps on the right</option>
+            <option value="right">Right — text wraps on the left</option>
+            <option value="center">Centered — no wrapping</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Caption (optional)</label>
+        <input type="text" id="insertCaption" placeholder="e.g. Storm clouds over Ljubljana — Photo: Name" onkeydown="if(event.key==='Enter')confirmInsert()">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('insertModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmInsert()">Insert</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+
+    <div class="modal-header">
+      <h3>Editorial settings</h3>
+      <button class="modal-close" onclick="closeModal('settingsModal')">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="settings-section">
+        <h4>GitHub integration</h4>
+
+        <div class="form-group">
+          <label>GitHub token</label>
+          <input type="password" id="ghToken" placeholder="ghp_…">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Repository owner</label>
+            <input type="text" id="ghOwner" placeholder="username">
+          </div>
+          <div class="form-group">
+            <label>Repository name</label>
+            <input type="text" id="ghRepo" placeholder="meteonews">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Branch</label>
+            <input type="text" id="ghBranch" placeholder="main">
+          </div>
+          <div class="form-group">
+            <label>Path to articles.json</label>
+            <input type="text" id="ghFilePath" placeholder="articles.json">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save</button>
+          <button class="btn btn-outline btn-sm" onclick="testConnection()">Test connection</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Categories</h4>
+        <div class="rubrika-list" id="rubrikaList"></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <input type="text" id="newRubrikaInput" placeholder="Category name…" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px">
+          <button class="btn btn-primary btn-sm" onclick="addRubrika()">Add</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Editorial password</h4>
+        <div class="form-group">
+          <label>New password</label>
+          <input type="password" id="newAdminPass" placeholder="••••••••">
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="changePassword()">Change password</button>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('settingsModal')">Close</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal" style="max-width:380px">
+
+    <div class="modal-header">
+      <h3>Editor access</h3>
+      <button class="modal-close" onclick="closeModal('loginModal')">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div style="text-align:center;font-size:40px;margin-bottom:16px">🌦</div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="adminPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkAdminLogin()">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('loginModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="checkAdminLogin()">Log in</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- DELETE -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:420px">
+
+    <div class="modal-header">
+      <h3>Confirm deletion</h3>
+      <button class="modal-close" onclick="closeModal('confirmModal')">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="font-size:15px">Are you sure you want to delete this article? This action cannot be undone.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" id="btnConfirmDelete">Delete</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+/* ============================================================
+   MAIN STATE
+============================================================ */
+
+let STATE={
+  articles:[],
+  categories:[
+    'Weather in Slovenia',
+    'Forecasts',
+    'Climate Change',
+    'Extreme Events',
+    'Astronomy',
+    'Nature & Environment',
+    'Meteorological Science'
+  ],
+  settings:{
+    ghToken:'',
+    ghOwner:'',
+    ghRepo:'',
+    ghBranch:'main',
+    ghFilePath:'articles.json',
+    adminPass:'urednik2024'
+  },
+  isAdmin:false,
+  currentCategory:'all',
+  weather:[]
+};
+
+
+/* ============================================================
+   CATEGORY MIGRATION (old Slovenian names -> English)
+============================================================ */
+
+const CAT_MAP={
+  'Vreme v Sloveniji':'Weather in Slovenia',
+  'Napovedi':'Forecasts',
+  'Podnebne spremembe':'Climate Change',
+  'Ekstremni pojavi':'Extreme Events',
+  'Astronomija':'Astronomy',
+  'Narava & Okolje':'Nature & Environment',
+  'Meteorološka znanost':'Meteorological Science'
+};
+
+function tc(c){return CAT_MAP[c]||c}
+
+function migrateCats(){
+  STATE.categories=[...new Set(STATE.categories.map(tc))];
+  STATE.articles.forEach(a=>{a.category=tc(a.category)});
+}
+
+function setArticles(list){
+  STATE.articles=Array.isArray(list)?list:[];
+  migrateCats();
+  saveLocalState();
+}
+
+
+/* ============================================================
+   WEATHER
+============================================================ */
+
+const WEATHER_CITIES=[
+  {name:'Ljubljana',lat:46.0569,lon:14.5058},
+  {name:'Maribor',lat:46.5547,lon:15.6459},
+  {name:'Koper',lat:45.5481,lon:13.7302},
+  {name:'Kranjska Gora',lat:46.4856,lon:13.7850},
+  {name:'Portorož',lat:45.5143,lon:13.5921},
+  {name:'Celje',lat:46.2397,lon:15.2677},
+  {name:'Novo Mesto',lat:45.8011,lon:15.1710}
+];
+
+const WEATHER_REFRESH_MS=10*60*1000;
+
+
+/* ============================================================
+   CATEGORY ICONS
+============================================================ */
+
+const CAT_ICONS={
+  'Weather in Slovenia':'🇸🇮',
+  'Forecasts':'📅',
+  'Climate Change':'🌡',
+  'Extreme Events':'⚡',
+  'Astronomy':'🔭',
+  'Nature & Environment':'🌿',
+  'Meteorological Science':'🔬',
+  'all':'🏠'
+};
+
+function catIcon(c){return CAT_ICONS[c]||'🌦'}
+
+
+/* ============================================================
+   WMO CODES
+============================================================ */
+
+function getWeatherInfo(code){
+  code=Number(code);
+  if(code===0)return{icon:'☀️',description:'Sunny'};
+  if(code===1)return{icon:'🌤️',description:'Mostly clear'};
+  if(code===2)return{icon:'⛅',description:'Partly cloudy'};
+  if(code===3)return{icon:'☁️',description:'Overcast'};
+  if(code===45||code===48)return{icon:'🌫️',description:'Fog'};
+  if(code===51||code===53||code===55)return{icon:'🌦️',description:'Drizzle'};
+  if(code===56||code===57)return{icon:'🌧️',description:'Freezing drizzle'};
+  if(code===61||code===63||code===65)return{icon:'🌧️',description:'Rain'};
+  if(code===66||code===67)return{icon:'🌧️',description:'Freezing rain'};
+  if(code===71||code===73||code===75)return{icon:'🌨️',description:'Snow'};
+  if(code===77)return{icon:'❄️',description:'Snow grains'};
+  if(code===80||code===81||code===82)return{icon:'🌦️',description:'Rain showers'};
+  if(code===85||code===86)return{icon:'🌨️',description:'Snow showers'};
+  if(code===95)return{icon:'⛈️',description:'Thunderstorm'};
+  if(code===96||code===99)return{icon:'⛈️',description:'Thunderstorm with hail'};
+  return{icon:'🌦️',description:'Variable'};
+}
+
+
+/* ============================================================
+   WIND DIRECTION
+============================================================ */
+
+function getWindDirection(degrees){
+  if(degrees===null||degrees===undefined||isNaN(degrees))return '—';
+  const directions=['N','NE','E','SE','S','SW','W','NW'];
+  return directions[Math.round(Number(degrees)/45)%8];
+}
+
+
+/* ============================================================
+   VISIBILITY
+============================================================ */
+
+function visibilityKm(value){
+  if(value===null||value===undefined||isNaN(value))return '—';
+  return(Number(value)/1000).toFixed(1);
+}
+
+
+/* ============================================================
+   WEATHER FOR ONE CITY
+============================================================ */
+
+async function fetchWeatherCity(city){
+
+  const url=
+    'https://api.open-meteo.com/v1/forecast'+
+    '?latitude='+encodeURIComponent(city.lat)+
+    '&longitude='+encodeURIComponent(city.lon)+
+    '&current='+
+    'temperature_2m,'+
+    'relative_humidity_2m,'+
+    'weather_code,'+
+    'wind_speed_10m,'+
+    'wind_direction_10m,'+
+    'pressure_msl,'+
+    'visibility'+
+    '&temperature_unit=celsius'+
+    '&wind_speed_unit=kmh'+
+    '&timezone=Europe%2FLjubljana';
+
+  const response=await fetch(url,{cache:'no-store'});
+
+  if(!response.ok){
+    throw new Error('Weather API error: '+response.status);
+  }
+
+  const data=await response.json();
+
+  if(!data.current){
+    throw new Error('API returned no current data.');
+  }
+
+  const current=data.current;
+  const info=getWeatherInfo(current.weather_code);
+
+  return{
+    name:city.name,
+    temperature:Number(current.temperature_2m),
+    humidity:Number(current.relative_humidity_2m),
+    weatherCode:Number(current.weather_code),
+    wind:Number(current.wind_speed_10m),
+    windDirection:Number(current.wind_direction_10m),
+    pressure:Number(current.pressure_msl),
+    visibility:Number(current.visibility),
+    icon:info.icon,
+    description:info.description,
+    time:current.time
+  };
+
+}
+
+
+/* ============================================================
+   LOAD WEATHER
+============================================================ */
+
+async function loadWeather(){
+
+  const updateEl=document.getElementById('weatherUpdate');
+
+  if(updateEl){
+    updateEl.textContent='Updating…';
+  }
+
+  try{
+
+    const results=await Promise.all(
+      WEATHER_CITIES.map(city=>fetchWeatherCity(city))
+    );
+
+    STATE.weather=results;
+
+    renderWeatherStrip(results);
+
+    updateSidebarWeather(results.find(w=>w.name==='Ljubljana'));
+
+    const time=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+    const el=document.getElementById('weatherUpdate');
+    if(el){
+      el.textContent='Updated at '+time;
+    }
+
+  }catch(error){
+
+    console.error('Error fetching weather:',error);
+
+    if(STATE.weather.length){
+      renderWeatherStrip(STATE.weather);
+      updateSidebarWeather(STATE.weather.find(w=>w.name==='Ljubljana'));
+    }else{
+      renderWeatherError();
+    }
+
+    const el=document.getElementById('weatherUpdate');
+    if(el){
+      el.textContent='Weather currently unavailable';
+    }
+
+  }
+
+}
+
+
+/* ============================================================
+   WEATHER STRIP
+============================================================ */
+
+function renderWeatherStrip(weather){
+
+  const strip=document.getElementById('weatherStrip');
+
+  if(!strip)return;
+
+  strip.innerHTML='';
+
+  weather.forEach(w=>{
+
+    const city=document.createElement('div');
+    city.className='weather-city';
+
+    city.innerHTML=`
+      <span class="weather-icon">${w.icon}</span>
+      <div class="weather-info">
+        <div class="weather-name">${esc(w.name)}</div>
+        <div class="weather-temp">${Math.round(w.temperature)}°C</div>
+        <div class="weather-desc">${esc(w.description)}</div>
+      </div>
+    `;
+
+    strip.appendChild(city);
+
+  });
+
+  const update=document.createElement('div');
+  update.className='weather-update';
+  update.id='weatherUpdate';
+  update.textContent='Updated';
+
+  strip.appendChild(update);
+
+}
+
+
+/* ============================================================
+   WEATHER ERROR
+============================================================ */
+
+function renderWeatherError(){
+
+  const strip=document.getElementById('weatherStrip');
+
+  if(!strip)return;
+
+  strip.innerHTML=`
+    <div class="weather-city">
+      <span class="weather-icon">🌦️</span>
+      <div class="weather-info">
+        <div class="weather-name">Weather</div>
+        <div class="weather-temp">—°C</div>
+        <div class="weather-desc">Data currently unavailable</div>
+      </div>
+    </div>
+    <div class="weather-update" id="weatherUpdate">Retrying in 10 min</div>
+  `;
+
+}
+
+
+/* ============================================================
+   SIDEBAR WEATHER
+============================================================ */
+
+function updateSidebarWeather(weather){
+
+  if(!weather)return;
+
+  const temp=document.getElementById('sidebarTemp');
+  const desc=document.getElementById('sidebarDesc');
+  const humidity=document.getElementById('sidebarHumidity');
+  const wind=document.getElementById('sidebarWind');
+  const pressure=document.getElementById('sidebarPressure');
+  const visibility=document.getElementById('sidebarVisibility');
+  const windDirection=document.getElementById('sidebarWindDirection');
+  const icon=document.getElementById('sidebarWeatherIcon');
+  const lastUpdate=document.getElementById('sidebarLastUpdate');
+
+  if(temp){
+    temp.innerHTML=Math.round(weather.temperature)+'<sup>°C</sup>';
+  }
+
+  if(desc){
+    desc.textContent=weather.icon+' '+weather.description;
+  }
+
+  if(icon){
+    icon.textContent=weather.icon;
+  }
+
+  if(humidity){
+    humidity.textContent=Math.round(weather.humidity)+'%';
+  }
+
+  if(wind){
+    wind.textContent=Math.round(weather.wind)+' km/h';
+  }
+
+  if(windDirection){
+    windDirection.textContent=getWindDirection(weather.windDirection);
+  }
+
+  if(pressure){
+    pressure.textContent=Math.round(weather.pressure)+' hPa';
+  }
+
+  if(visibility){
+    visibility.textContent=visibilityKm(weather.visibility)+' km';
+  }
+
+  if(lastUpdate){
+    lastUpdate.textContent='Data updated at '+
+      new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  }
+
+}
+
+
+/* ============================================================
+   DOM READY
+============================================================ */
+
+document.addEventListener('DOMContentLoaded',()=>{
+
+  loadLocalState();
+  setDate();
+  renderNav();
+  loadArticles();
+  setupSearch();
+  loadWeather();
+
+  setInterval(loadWeather,WEATHER_REFRESH_MS);
+
+  document.getElementById('footerYear').textContent=new Date().getFullYear();
+
+  document.getElementById('btnNewArticle').addEventListener('click',()=>openArticleEditor());
+  document.getElementById('btnSettings').addEventListener('click',openSettings);
+  document.getElementById('btnAdminToggle').addEventListener('click',()=>openModal('loginModal'));
+
+  document.querySelectorAll('.modal-overlay').forEach(el=>{
+    el.addEventListener('click',e=>{
+      if(e.target===el){
+        el.classList.remove('open');
+      }
+    });
+  });
+
+});
+
+
+/* ============================================================
+   LOCAL STORAGE
+============================================================ */
+
+function loadLocalState(){
+
+  try{
+
+    const s=localStorage.getItem('meteo_settings');
+    if(s){
+      STATE.settings={...STATE.settings,...JSON.parse(s)};
+    }
+
+    const c=localStorage.getItem('meteo_cats');
+    if(c){
+      STATE.categories=JSON.parse(c);
+    }
+
+    const a=localStorage.getItem('meteo_articles');
+    if(a){
+      STATE.articles=JSON.parse(a);
+    }
+
+    migrateCats();
+
+  }catch(e){
+    console.error('localStorage error:',e);
+  }
+
+}
+
+
+function saveLocalState(){
+
+  try{
+    localStorage.setItem('meteo_settings',JSON.stringify(STATE.settings));
+    localStorage.setItem('meteo_cats',JSON.stringify(STATE.categories));
+    localStorage.setItem('meteo_articles',JSON.stringify(STATE.articles));
+  }catch(e){
+    console.error('Error saving:',e);
+  }
+
+}
+
+
+/* ============================================================
+   DATE
+============================================================ */
+
+function setDate(){
+
+  document.getElementById('currentDate').textContent=
+    new Date().toLocaleDateString('en-GB',{
+      weekday:'long',
+      year:'numeric',
+      month:'long',
+      day:'numeric'
+    });
+
+}
+
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+
+function renderNav(){
+
+  const nav=document.getElementById('navInner');
+
+  nav.innerHTML=`
+    <div class="nav-item ${STATE.currentCategory==='all'?'active':''}" data-cat="all" onclick="filterCategory('all',this)">
+      🏠 All news
+    </div>
+  `;
+
+  STATE.categories.forEach(cat=>{
+
+    const d=document.createElement('div');
+
+    d.className='nav-item'+(STATE.currentCategory===cat?' active':'');
+    d.dataset.cat=cat;
+    d.textContent=catIcon(cat)+' '+cat;
+
+    d.onclick=function(){
+      filterCategory(cat,this);
+    };
+
+    nav.appendChild(d);
+
+  });
+
+}
+
+
+/* ============================================================
+   FILTERING
+============================================================ */
+
+function filterCategory(cat,el){
+
+  const rs=document.getElementById('readerSection');
+
+  if(rs&&rs.classList.contains('open')){
+    rs.classList.remove('open');
+    document.querySelector('main').classList.remove('reader-open');
+  }
+
+  STATE.currentCategory=cat;
+
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+
+  if(el){
+    el.classList.add('active');
+  }else{
+    const f=document.querySelector(`.nav-item[data-cat="${cssEscape(cat)}"]`);
+    if(f){
+      f.classList.add('active');
+    }
+  }
+
+  document.getElementById('sectionTitle').textContent=cat==='all'?'Latest':cat;
+
+  document.getElementById('heroSection').style.display=cat==='all'?'':'none';
+
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  renderArticles();
+
+}
+
+
+/* ============================================================
+   LOAD ARTICLES
+============================================================ */
+
+async function loadArticles(){
+
+  const{ghOwner,ghRepo,ghFilePath,ghBranch,ghToken}=STATE.settings;
+
+  try{
+
+    const r=await fetch(ghFilePath||'articles.json',{cache:'no-store'});
+
+    if(r.ok){
+
+      const j=await r.json();
+
+      setArticles(j.articles||j);
+
+      renderHero();
+      renderArticles();
+      renderSidebar();
+
+      return;
+
+    }
+
+  }catch(e){}
+
+  if(ghOwner&&ghRepo&&ghFilePath){
+
+    try{
+
+      const r=await fetch(
+        `https://raw.githubusercontent.com/${ghOwner}/${ghRepo}/${ghBranch||'main'}/${ghFilePath}?t=${Date.now()}`
+      );
+
+      if(r.ok){
+
+        const j=await r.json();
+
+        setArticles(j.articles||j);
+
+        renderHero();
+        renderArticles();
+        renderSidebar();
+
+        return;
+
+      }
+
+    }catch(e){}
+
+  }
+
+  if(ghOwner&&ghRepo&&ghFilePath&&ghToken){
+
+    try{
+
+      const r=await fetch(
+        `https://api.github.com/repos/${ghOwner}/${ghRepo}/contents/${ghFilePath}?ref=${ghBranch||'main'}`,
+        {
+          headers:{
+            Authorization:`token ${ghToken}`,
+            Accept:'application/vnd.github.v3+json'
+          }
+        }
+      );
+
+      if(r.ok){
+
+        const j=await r.json();
+
+        const decoded=decodeURIComponent(escape(atob(j.content.replace(/\s/g,''))));
+
+        setArticles(JSON.parse(decoded).articles||[]);
+
+      }
+
+    }catch(e){}
+
+  }
+
+  renderHero();
+  renderArticles();
+  renderSidebar();
+
+}
+
+
+/* ============================================================
+   REFRESH ARTICLES
+============================================================ */
+
+async function refreshArticles(){
+
+  const btn=document.getElementById('btnRefresh');
+
+  btn.textContent='↺ …';
+  btn.disabled=true;
+
+  await loadArticles();
+
+  btn.textContent='↺ Refresh';
+  btn.disabled=false;
+
+  toast('News updated.','success');
+
+}
+
+
+/* ============================================================
+   GITHUB
+============================================================ */
+
+async function saveToGitHub(){
+
+  const{ghToken,ghOwner,ghRepo,ghFilePath,ghBranch}=STATE.settings;
+
+  if(!ghToken||!ghOwner||!ghRepo){
+    return false;
+  }
+
+  let sha=null;
+
+  try{
+
+    const r=await fetch(
+      `https://api.github.com/repos/${ghOwner}/${ghRepo}/contents/${ghFilePath}?ref=${ghBranch||'main'}`,
+      {
+        headers:{
+          Authorization:`token ${ghToken}`,
+          Accept:'application/vnd.github.v3+json'
+        }
+      }
+    );
+
+    if(r.ok){
+      const j=await r.json();
+      sha=j.sha;
+    }
+
+  }catch(e){}
+
+  const content=btoa(
+    unescape(
+      encodeURIComponent(
+        JSON.stringify({articles:STATE.articles},null,2)
+      )
+    )
+  );
+
+  const body={
+    message:`Meteonews — ${new Date().toLocaleString('en-GB')}`,
+    content,
+    branch:ghBranch||'main'
+  };
+
+  if(sha){
+    body.sha=sha;
+  }
+
+  const res=await fetch(
+    `https://api.github.com/repos/${ghOwner}/${ghRepo}/contents/${ghFilePath}`,
+    {
+      method:'PUT',
+      headers:{
+        Authorization:`token ${ghToken}`,
+        'Content-Type':'application/json',
+        Accept:'application/vnd.github.v3+json'
+      },
+      body:JSON.stringify(body)
+    }
+  );
+
+  return res.ok;
+
+}
+
+
+/* ============================================================
+   HERO
+============================================================ */
+
+function renderHero(){
+
+  const s=document.getElementById('heroSection');
+
+  if(!STATE.articles.length){
+    s.innerHTML='';
+    return;
+  }
+
+  const sorted=[...STATE.articles].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  const h=sorted[0];
+  const h2=sorted[1];
+  const h3=sorted[2];
+
+  const side=x=>x?`
+    <div class="hero-side" onclick="openReader(${x.id})">
+      <span class="badge">${catIcon(x.category)} ${esc(x.category)}</span>
+      <h3>${esc(x.title)}</h3>
+      <p>${esc(x.excerpt||'')}</p>
+      <div class="hero-side-meta">${esc(x.author||'Editorial team')} · ${formatDate(x.date)}</div>
+    </div>`:'';
+
+  s.innerHTML=`
+
+    <div class="hero-grid">
+
+      <div class="hero-main" onclick="openReader(${h.id})">
+
+        ${
+          h.image
+          ?`<img src="${esc(h.image)}" alt="${esc(h.title)}" loading="lazy">`
+          :`<div style="width:100%;height:100%;background:linear-gradient(135deg,var(--sky),var(--sky3));display:flex;align-items:center;justify-content:center;font-size:80px;opacity:.3">🌦</div>`
+        }
+
+        <div class="hero-main-content">
+          <span class="badge">${catIcon(h.category)} ${esc(h.category)}</span>
+          <h2>${esc(h.title)}</h2>
+          <p>${esc(h.excerpt||'')}</p>
+          <div class="hero-meta">
+            <span>${esc(h.author||'Editorial team')}</span>
+            <span>·</span>
+            <span>${formatDate(h.date)}</span>
+          </div>
+        </div>
+
+      </div>
+
+      ${side(h2)}
+      ${side(h3)}
+
+    </div>
+
+  `;
+
+}
+
+
+/* ============================================================
+   ARTICLES
+============================================================ */
+
+function renderArticles(){
+
+  const grid=document.getElementById('articlesGrid');
+  const searchInput=document.getElementById('searchInput');
+
+  const q=(searchInput.value||'').toLowerCase();
+
+  let arts=[...STATE.articles].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  // The newest article is already shown in the HERO section,
+  // so it is not repeated in the "Latest" list.
+  // When searching, it can still appear.
+  const featured=arts[0];
+
+  if(STATE.currentCategory==='all'&&!q&&featured){
+    arts=arts.filter(a=>a.id!==featured.id);
+  }
+
+  if(STATE.currentCategory!=='all'){
+    arts=arts.filter(a=>a.category===STATE.currentCategory);
+  }
+
+  if(q){
+    arts=arts.filter(a=>
+      (a.title||'').toLowerCase().includes(q)||
+      (a.excerpt||'').toLowerCase().includes(q)||
+      stripMedia(a.content||'').toLowerCase().includes(q)
+    );
+  }
+
+  if(!arts.length){
+
+    grid.innerHTML=`
+      <div class="empty-state">
+        <div class="ei">🌦</div>
+        <h3>No articles</h3>
+        <p>${q?'Your search returned no results.':'No articles have been published in this category.'}</p>
+        ${STATE.isAdmin?`<button class="btn btn-primary" onclick="openArticleEditor()">+ Add article</button>`:''}
+      </div>
+    `;
+
+    return;
+
+  }
+
+  grid.innerHTML=arts.map(a=>`
+
+    <div class="article-card" onclick="openReader(${a.id})">
+
+      <div class="card-image">
+        ${
+          a.image
+          ?`<img src="${esc(a.image)}" alt="${esc(a.title)}" loading="lazy">`
+          :`<div class="card-image-placeholder">${catIcon(a.category)}</div>`
+        }
+      </div>
+
+      <div class="card-body">
+
+        <div class="card-category">${esc(a.category)}</div>
+
+        <div class="card-title">${esc(a.title)}</div>
+
+        <div class="card-excerpt">${esc(a.excerpt||stripMedia(a.content||'').substring(0,160))}</div>
+
+        <div class="card-footer">
+          <div class="card-author">
+            <div class="card-avatar">${(a.author||'E')[0].toUpperCase()}</div>
+            <span>${esc(a.author||'Editorial team')}</span>
+          </div>
+          <span>${formatDate(a.date)}</span>
+        </div>
+
+        ${
+          STATE.isAdmin
+          ?`<div class="card-admin-actions">
+              <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openArticleEditor(${a.id})">✎ Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDelete(${a.id})">✕ Delete</button>
+            </div>`
+          :''
+        }
+
+      </div>
+
+    </div>
+
+  `).join('');
+
+}
+
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+
+function renderSidebar(){
+
+  const sb=document.getElementById('sidebar');
+
+  const top=[...STATE.articles]
+    .sort((a,b)=>new Date(b.date)-new Date(a.date))
+    .slice(0,6);
+
+  sb.innerHTML=`
+
+    <div class="weather-widget">
+
+      <div class="weather-widget-title">
+        <span id="sidebarWeatherIcon" style="font-size:18px;margin-right:5px">🌦️</span>
+        Current weather — Ljubljana
+      </div>
+
+      <div class="weather-main-temp" id="sidebarTemp">—<sup>°C</sup></div>
+
+      <div class="weather-main-desc" id="sidebarDesc">Fetching data…</div>
+
+      <div class="weather-details">
+
+        <div class="weather-detail-item">
+          <div class="weather-detail-label">Humidity</div>
+          <div class="weather-detail-value" id="sidebarHumidity">—%</div>
+        </div>
+
+        <div class="weather-detail-item">
+          <div class="weather-detail-label">Wind</div>
+          <div class="weather-detail-value" id="sidebarWind">— km/h</div>
+        </div>
+
+        <div class="weather-detail-item">
+          <div class="weather-detail-label">Wind direction</div>
+          <div class="weather-detail-value" id="sidebarWindDirection">—</div>
+        </div>
+
+        <div class="weather-detail-item">
+          <div class="weather-detail-label">Pressure</div>
+          <div class="weather-detail-value" id="sidebarPressure">— hPa</div>
+        </div>
+
+        <div class="weather-detail-item">
+          <div class="weather-detail-label">Visibility</div>
+          <div class="weather-detail-value" id="sidebarVisibility">— km</div>
+        </div>
+
+      </div>
+
+      <div class="weather-last-update" id="sidebarLastUpdate">Fetching data…</div>
+
+    </div>
+
+    <div class="sidebar-widget">
+
+      <div class="widget-title">Trending</div>
+
+      ${
+        top.length
+        ?top.map((a,i)=>`
+          <div class="trending-item" onclick="openReader(${a.id})">
+            <div class="trending-num">${String(i+1).padStart(2,'0')}</div>
+            <div class="trending-text">
+              <h4>${esc(a.title)}</h4>
+              <span>${catIcon(a.category)} ${esc(a.category)} · ${formatDate(a.date)}</span>
+            </div>
+          </div>
+        `).join('')
+        :'<p style="font-size:13px;color:var(--gray)">No content yet.</p>'
+      }
+
+    </div>
+
+    <div class="sidebar-widget">
+
+      <div class="widget-title">Categories</div>
+
+      ${
+        STATE.categories.map(c=>{
+
+          const cnt=STATE.articles.filter(a=>a.category===c).length;
+
+          return`
+            <div
+              style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:14px"
+              onclick="filterCategoryByName(${esc(JSON.stringify(c))})"
+            >
+              <span>${catIcon(c)} ${esc(c)}</span>
+              <span style="font-size:12px;color:var(--gray);font-weight:600">${cnt}</span>
+            </div>
+          `;
+
+        }).join('')
+      }
+
+    </div>
+
+  `;
+
+  if(STATE.weather.length){
+    updateSidebarWeather(STATE.weather.find(w=>w.name==='Ljubljana'));
+  }
+
+}
+
+
+/* ============================================================
+   FILTER BY NAME
+============================================================ */
+
+function filterCategoryByName(name){
+
+  const rs=document.getElementById('readerSection');
+  if(rs&&rs.classList.contains('open')){
+    rs.classList.remove('open');
+    document.querySelector('main').classList.remove('reader-open');
+  }
+
+  STATE.currentCategory=name;
+
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+
+  const navItem=[...document.querySelectorAll('.nav-item')].find(n=>n.dataset.cat===name);
+
+  if(navItem){
+    navItem.classList.add('active');
+  }
+
+  document.getElementById('sectionTitle').textContent=name;
+  document.getElementById('heroSection').style.display='none';
+
+  renderArticles();
+
+  window.scrollTo({top:0,behavior:'smooth'});
+
+}
+
+
+/* ============================================================
+   READER
+============================================================ */
+
+function openReader(id){
+
+  const a=STATE.articles.find(x=>x.id===id);
+
+  if(!a)return;
+
+  const adminBtns=STATE.isAdmin
+    ?`<div class="reader-admin">
+        <button class="btn btn-outline" onclick="openArticleEditor(${a.id})">✎ Edit article</button>
+        <button class="btn btn-danger" onclick="confirmDelete(${a.id})">✕ Delete</button>
+      </div>`
+    :'';
+
+  document.getElementById('readerContent').innerHTML=`
+
+    <div class="reader-category">${catIcon(a.category)} ${esc(a.category)}</div>
+
+    <h1 class="reader-title">${esc(a.title)}</h1>
+
+    <div class="reader-meta">
+      <span>${esc(a.author||'Editorial team')}</span>
+      <span>·</span>
+      <span>${formatDate(a.date)}</span>
+      <span>·</span>
+      <span>${readTime(a.content)} min read</span>
+    </div>
+
+    ${
+      a.image
+      ?`<img class="reader-image" src="${esc(a.image)}" alt="${esc(a.title)}" loading="lazy">`
+      :''
+    }
+
+    <div class="reader-body">
+      ${formatContent(a.content||'')}
+    </div>
+
+    ${
+      a.images&&a.images.length
+      ?`<div class="reader-gallery">
+          <div class="reader-gallery-title">Photo gallery</div>
+          <div class="reader-gallery-grid">
+            ${
+              a.images.filter(Boolean).map((image,index)=>`
+                <div class="reader-gallery-item">
+                  <img src="${esc(image)}" alt="${esc(a.title)} — photo ${index+1}" loading="lazy">
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>`
+      :''
+    }
+
+    ${adminBtns}
+
+  `;
+
+  document.getElementById('readerCrumbCat').textContent=catIcon(a.category)+' '+a.category;
+
+  document.getElementById('readerSection').classList.add('open');
+  document.querySelector('main').classList.add('reader-open');
+
+  window.scrollTo({top:0,behavior:'smooth'});
+
+}
+
+
+/* ============================================================
+   CLOSE READER
+============================================================ */
+
+function closeReader(){
+
+  document.getElementById('readerSection').classList.remove('open');
+  document.querySelector('main').classList.remove('reader-open');
+
+  window.scrollTo({top:0,behavior:'smooth'});
+
+}
+
+
+/* ============================================================
+   ADD EXTRA PHOTO FIELD
+============================================================ */
+
+function addArticleImageField(value=''){
+
+  const container=document.getElementById('articleImages');
+
+  const row=document.createElement('div');
+
+  row.style.display='flex';
+  row.style.gap='8px';
+  row.style.alignItems='center';
+
+  row.innerHTML=`
+    <input type="url" class="article-extra-image" placeholder="https://…" value="${esc(value)}" style="flex:1">
+    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" title="Remove photo">✕</button>
+  `;
+
+  container.appendChild(row);
+
+}
+
+
+/* ============================================================
+   GET EXTRA PHOTOS
+============================================================ */
+
+function getArticleImages(){
+
+  return[...document.querySelectorAll('.article-extra-image')]
+    .map(input=>input.value.trim())
+    .filter(Boolean);
+
+}
+
+
+/* ============================================================
+   INLINE MEDIA (images + YouTube inside the text)
+
+   Stored in the article text as one line each, e.g.:
+   [image url="https://…" size="medium" align="left" caption="…"]
+   [video url="https://youtu.be/…" size="full" align="center"]
+============================================================ */
+
+const MEDIA_LINE=/^\[(image|video)\s+(.*)\]$/i;
+
+function parseAttrs(str){
+
+  const out={};
+  const re=/(\w+)="([^"]*)"/g;
+  let m;
+
+  while((m=re.exec(str))){
+    out[m[1].toLowerCase()]=m[2];
+  }
+
+  return out;
+
+}
+
+function ytId(u){
+
+  u=(u||'').trim();
+
+  const m=u.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([\w-]{11})/i);
+
+  if(m)return m[1];
+
+  if(/^[\w-]{11}$/.test(u))return u;
+
+  return null;
+
+}
+
+function renderMedia(type,a){
+
+  const size=['small','medium','large','full'].includes(a.size)?a.size:'medium';
+  const align=['left','right','center'].includes(a.align)?a.align:'center';
+  const cap=a.caption?`<figcaption>${esc(a.caption)}</figcaption>`:'';
+
+  if(type==='image'){
+
+    if(!a.url)return '';
+
+    return`<figure class="media image size-${size} align-${align}">
+      <div class="frame"><img src="${esc(a.url)}" alt="${esc(a.caption||'')}" loading="lazy"></div>
+      ${cap}
+    </figure>`;
+
+  }
+
+  const id=ytId(a.url);
+
+  if(!id)return '';
+
+  return`<figure class="media video size-${size} align-${align}">
+    <div class="frame">
+      <iframe src="https://www.youtube-nocookie.com/embed/${id}"
+        title="YouTube video player"
+        loading="lazy"
+        allow="accelerometer; encrypted-media; picture-in-picture; fullscreen"
+        allowfullscreen></iframe>
+    </div>
+    ${cap}
+  </figure>`;
+
+}
+
+/* article text without media lines (for excerpts, search, reading time) */
+function stripMedia(text){
+
+  return String(text||'')
+    .split('\n')
+    .filter(l=>!MEDIA_LINE.test(l.trim()))
+    .join('\n');
+
+}
+
+
+/* ---------- editor: insert dialog ---------- */
+
+let lastCaret=null;
+
+function openInsertModal(type){
+
+  setPreview(false);
+
+  const ta=document.getElementById('articleContent');
+
+  lastCaret=ta.selectionStart!=null?ta.selectionStart:ta.value.length;
+
+  document.getElementById('insertType').value=type;
+
+  const isVideo=type==='video';
+
+  document.getElementById('insertTitle').textContent=isVideo?'Insert YouTube video':'Insert image';
+  document.getElementById('insertUrlLabel').textContent=isVideo?'YouTube link *':'Image URL *';
+  document.getElementById('insertUrl').placeholder=isVideo?'https://www.youtube.com/watch?v=…':'https://…';
+  document.getElementById('insertUrlHint').textContent=isVideo
+    ?'Paste any YouTube link (watch, youtu.be, shorts or embed).'
+    :'Direct link to the image file.';
+
+  document.getElementById('insertUrl').value='';
+  document.getElementById('insertCaption').value='';
+  document.getElementById('insertSize').value=isVideo?'full':'medium';
+  document.getElementById('insertAlign').value=isVideo?'center':'left';
+
+  openModal('insertModal');
+
+  setTimeout(()=>document.getElementById('insertUrl').focus(),60);
+
+}
+
+function confirmInsert(){
+
+  const type=document.getElementById('insertType').value;
+  const url=document.getElementById('insertUrl').value.trim();
+  const size=document.getElementById('insertSize').value;
+  const align=document.getElementById('insertAlign').value;
+  const caption=document.getElementById('insertCaption').value
+    .replace(/["\n\r]/g,"'")
+    .trim();
+
+  if(!url){
+    toast(type==='video'?'Paste a YouTube link!':'Enter an image URL!','error');
+    return;
+  }
+
+  if(type==='video'&&!ytId(url)){
+    toast('That does not look like a valid YouTube link.','error');
+    return;
+  }
+
+  if(type==='image'&&!/^https?:\/\//i.test(url)&&!/^data:image\//i.test(url)){
+    toast('Image URL must start with https://','error');
+    return;
+  }
+
+  let token=`[${type} url="${url.replace(/"/g,'%22')}" size="${size}" align="${align}"`;
+
+  if(caption){
+    token+=` caption="${caption}"`;
+  }
+
+  token+=']';
+
+  const ta=document.getElementById('articleContent');
+
+  const pos=lastCaret!=null?lastCaret:ta.value.length;
+  const before=ta.value.slice(0,pos);
+  const after=ta.value.slice(pos);
+
+  const pre=before&&!before.endsWith('\n')?'\n':'';
+  const post=after&&!after.startsWith('\n')?'\n':'';
+
+  ta.value=before+pre+token+post+after;
+
+  const newPos=(before+pre+token+post).length;
+
+  ta.focus();
+  ta.setSelectionRange(newPos,newPos);
+
+  closeModal('insertModal');
+
+  toast(type==='video'?'Video inserted.':'Image inserted.','success');
+
+}
+
+
+/* ---------- editor: live preview ---------- */
+
+function setPreview(on){
+
+  const ta=document.getElementById('articleContent');
+  const pv=document.getElementById('editorPreview');
+  const btn=document.getElementById('btnPreview');
+
+  if(on){
+
+    const html=formatContent(ta.value);
+
+    pv.innerHTML=html||'<p class="empty-note">Nothing to preview yet.</p>';
+    pv.style.display='block';
+    ta.style.display='none';
+    btn.textContent='✎ Edit text';
+
+  }else{
+
+    pv.style.display='none';
+    ta.style.display='';
+    btn.textContent='👁 Preview';
+
+  }
+
+}
+
+function togglePreview(){
+
+  const pv=document.getElementById('editorPreview');
+
+  setPreview(pv.style.display!=='block');
+
+}
+
+
+/* ============================================================
+   EDITOR
+============================================================ */
+
+function openArticleEditor(id=null){
+
+  if(!STATE.isAdmin)return;
+
+  setPreview(false);
+
+  const sel=document.getElementById('articleCategory');
+
+  sel.innerHTML=STATE.categories
+    .map(c=>`<option value="${esc(c)}">${esc(c)}</option>`)
+    .join('');
+
+  if(id){
+
+    const a=STATE.articles.find(x=>x.id===id);
+
+    if(!a)return;
+
+    document.getElementById('editorTitle').textContent='Edit article';
+    document.getElementById('editingId').value=id;
+    document.getElementById('articleTitle').value=a.title;
+    document.getElementById('articleCategory').value=a.category;
+    document.getElementById('articleAuthor').value=a.author||'';
+    document.getElementById('articleExcerpt').value=a.excerpt||'';
+    document.getElementById('articleContent').value=a.content||'';
+    document.getElementById('articleImage').value=a.image||'';
+
+    /* LOAD EXTRA PHOTOS */
+
+    const imagesContainer=document.getElementById('articleImages');
+
+    imagesContainer.innerHTML='';
+
+    (a.images||[]).forEach(image=>addArticleImageField(image));
+
+    document.getElementById('btnSaveArticle').textContent='Save changes';
+
+  }else{
+
+    document.getElementById('editorTitle').textContent='New article';
+    document.getElementById('editingId').value='';
+
+    [
+      'articleTitle',
+      'articleAuthor',
+      'articleExcerpt',
+      'articleContent',
+      'articleImage'
+    ].forEach(i=>document.getElementById(i).value='');
+
+    /* CLEAR EXTRA PHOTOS */
+
+    document.getElementById('articleImages').innerHTML='';
+
+    document.getElementById('btnSaveArticle').textContent='Publish article';
+
+  }
+
+  openModal('editorModal');
+
+}
+
+
+/* ============================================================
+   SAVE ARTICLE
+============================================================ */
+
+async function saveArticle(){
+
+  const title=document.getElementById('articleTitle').value.trim();
+  const content=document.getElementById('articleContent').value.trim();
+
+  /* GET EXTRA PHOTOS */
+
+  const images=getArticleImages();
+
+  if(!title){
+    toast('Enter a title!','error');
+    return;
+  }
+
+  if(!content){
+    toast('Enter some content!','error');
+    return;
+  }
+
+  const btn=document.getElementById('btnSaveArticle');
+
+  const editingId=document.getElementById('editingId').value;
+
+  const origText=editingId?'Save changes':'Publish article';
+
+  btn.disabled=true;
+
+  btn.innerHTML='<span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.2);border-top-color:var(--storm);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px"></span>Saving…';
+
+  const article={
+
+    id:editingId?parseInt(editingId):Date.now(),
+
+    title,
+
+    category:document.getElementById('articleCategory').value,
+
+    author:document.getElementById('articleAuthor').value.trim()||'Editorial team',
+
+    excerpt:document.getElementById('articleExcerpt').value.trim(),
+
+    content,
+
+    image:document.getElementById('articleImage').value.trim(),
+
+    /* EXTRA PHOTOS */
+
+    images,
+
+    date:editingId
+      ?(STATE.articles.find(a=>a.id===parseInt(editingId))?.date||new Date().toISOString())
+      :new Date().toISOString(),
+
+    updated:new Date().toISOString()
+
+  };
+
+
+  if(editingId){
+
+    const idx=STATE.articles.findIndex(a=>a.id===parseInt(editingId));
+
+    if(idx!==-1){
+      STATE.articles[idx]=article;
+    }else{
+      STATE.articles.unshift(article);
+    }
+
+  }else{
+
+    STATE.articles.unshift(article);
+
+  }
+
+
+  saveLocalState();
+
+  let ghOk=false;
+
+  try{
+    ghOk=await saveToGitHub();
+  }catch(e){}
+
+
+  btn.disabled=false;
+  btn.innerHTML=origText;
+
+  closeModal('editorModal');
+
+  renderHero();
+  renderArticles();
+  renderSidebar();
+
+  toast(
+    ghOk?'Article published to GitHub! ✓':'Saved locally (GitHub not configured)',
+    ghOk?'success':'error'
+  );
+
+}
+
+
+/* ============================================================
+   DELETE
+============================================================ */
+
+function confirmDelete(id){
+
+  openModal('confirmModal');
+
+  document.getElementById('btnConfirmDelete').onclick=async()=>{
+
+    STATE.articles=STATE.articles.filter(a=>a.id!==id);
+
+    saveLocalState();
+
+    try{
+      await saveToGitHub();
+    }catch(e){}
+
+    closeModal('confirmModal');
+
+    renderHero();
+    renderArticles();
+    renderSidebar();
+
+    if(document.getElementById('readerSection').classList.contains('open')){
+      closeReader();
+    }
+
+    toast('Article deleted.','success');
+
+  };
+
+}
+
+
+/* ============================================================
+   ADMIN LOGIN
+============================================================ */
+
+function checkAdminLogin(){
+
+  const pw=document.getElementById('adminPassword').value;
+
+  if(pw===STATE.settings.adminPass){
+
+    STATE.isAdmin=true;
+
+    closeModal('loginModal');
+
+    document.getElementById('adminBanner').classList.add('visible');
+    document.getElementById('btnNewArticle').style.display='inline-flex';
+    document.getElementById('btnSettings').style.display='inline-block';
+    document.getElementById('btnAdminToggle').textContent='Log out';
+    document.getElementById('btnAdminToggle').onclick=adminLogout;
+    document.getElementById('adminPassword').value='';
+
+    renderArticles();
+
+    toast('Welcome, editor!','success');
+
+  }else{
+
+    toast('Wrong password.','error');
+
+  }
+
+}
+
+
+/* ============================================================
+   ADMIN LOGOUT
+============================================================ */
+
+function adminLogout(){
+
+  STATE.isAdmin=false;
+
+  document.getElementById('adminBanner').classList.remove('visible');
+  document.getElementById('btnNewArticle').style.display='none';
+  document.getElementById('btnSettings').style.display='none';
+
+  const btn=document.getElementById('btnAdminToggle');
+
+  btn.textContent='Editor access';
+  btn.onclick=()=>openModal('loginModal');
+
+  renderArticles();
+
+  toast('Logged out.','success');
+
+}
+
+
+/* ============================================================
+   SETTINGS
+============================================================ */
+
+function openSettings(){
+
+  const s=STATE.settings;
+
+  document.getElementById('ghToken').value=s.ghToken||'';
+  document.getElementById('ghOwner').value=s.ghOwner||'';
+  document.getElementById('ghRepo').value=s.ghRepo||'';
+  document.getElementById('ghBranch').value=s.ghBranch||'main';
+  document.getElementById('ghFilePath').value=s.ghFilePath||'articles.json';
+
+  renderRubrikaList();
+
+  openModal('settingsModal');
+
+}
+
+
+/* ============================================================
+   SAVE SETTINGS
+============================================================ */
+
+function saveSettings(){
+
+  STATE.settings.ghToken=document.getElementById('ghToken').value.trim();
+  STATE.settings.ghOwner=document.getElementById('ghOwner').value.trim();
+  STATE.settings.ghRepo=document.getElementById('ghRepo').value.trim();
+  STATE.settings.ghBranch=document.getElementById('ghBranch').value.trim()||'main';
+  STATE.settings.ghFilePath=document.getElementById('ghFilePath').value.trim()||'articles.json';
+
+  saveLocalState();
+
+  toast('Settings saved.','success');
+
+}
+
+
+/* ============================================================
+   PASSWORD
+============================================================ */
+
+function changePassword(){
+
+  const p=document.getElementById('newAdminPass').value.trim();
+
+  if(!p){
+    toast('Enter a new password!','error');
+    return;
+  }
+
+  STATE.settings.adminPass=p;
+
+  saveLocalState();
+
+  document.getElementById('newAdminPass').value='';
+
+  toast('Password changed.','success');
+
+}
+
+
+/* ============================================================
+   GITHUB CONNECTION
+============================================================ */
+
+async function testConnection(){
+
+  const{ghToken,ghOwner,ghRepo}=STATE.settings;
+
+  if(!ghToken||!ghOwner||!ghRepo){
+    toast('Fill in all fields and save first.','error');
+    return;
+  }
+
+  try{
+
+    const r=await fetch(
+      `https://api.github.com/repos/${ghOwner}/${ghRepo}`,
+      {headers:{Authorization:`token ${ghToken}`}}
+    );
+
+    toast(
+      r.ok?'GitHub connection successful! ✓':'Error: '+r.status,
+      r.ok?'success':'error'
+    );
+
+  }catch(e){
+
+    toast('Connection error.','error');
+
+  }
+
+}
+
+
+/* ============================================================
+   CATEGORIES
+============================================================ */
+
+function renderRubrikaList(){
+
+  document.getElementById('rubrikaList').innerHTML=STATE.categories
+    .map((c,i)=>`
+      <div class="rubrika-item">
+        <span>${catIcon(c)} ${esc(c)}</span>
+        <button class="btn btn-outline btn-sm" onclick="deleteRubrika(${i})">Remove</button>
+      </div>
+    `)
+    .join('');
+
+}
+
+
+function addRubrika(){
+
+  const inp=document.getElementById('newRubrikaInput');
+
+  const name=inp.value.trim();
+
+  if(!name||STATE.categories.includes(name)){
+    toast('Category already exists or is empty.','error');
+    return;
+  }
+
+  STATE.categories.push(name);
+
+  saveLocalState();
+
+  inp.value='';
+
+  renderRubrikaList();
+  renderNav();
+  renderSidebar();
+
+  toast(`Category "${name}" added.`,'success');
+
+}
+
+
+function deleteRubrika(i){
+
+  const name=STATE.categories[i];
+
+  STATE.categories.splice(i,1);
+
+  saveLocalState();
+
+  renderRubrikaList();
+  renderNav();
+  renderSidebar();
+
+  toast(`Category "${name}" removed.`,'success');
+
+}
+
+
+/* ============================================================
+   SEARCH
+============================================================ */
+
+function setupSearch(){
+
+  let t;
+
+  document.getElementById('searchInput').addEventListener('input',()=>{
+
+    clearTimeout(t);
+
+    t=setTimeout(renderArticles,250);
+
+  });
+
+}
+
+
+/* ============================================================
+   MODALS
+============================================================ */
+
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+function toast(msg,type='success'){
+
+  const c=document.getElementById('toastContainer');
+
+  const t=document.createElement('div');
+
+  t.className=`toast ${type}`;
+  t.textContent=msg;
+
+  c.appendChild(t);
+
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+
+  setTimeout(()=>{
+
+    t.classList.remove('show');
+
+    setTimeout(()=>t.remove(),300);
+
+  },3500);
+
+}
+
+
+/* ============================================================
+   ESCAPE
+============================================================ */
+
+function esc(s){
+
+  return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+
+}
+
+
+/* ============================================================
+   CSS ESCAPE
+============================================================ */
+
+function cssEscape(value){
+
+  if(window.CSS&&typeof window.CSS.escape==='function'){
+    return window.CSS.escape(value);
+  }
+
+  return String(value).replace(/["\\]/g,'\\$&');
+
+}
+
+
+/* ============================================================
+   DATE FORMAT
+============================================================ */
+
+function formatDate(iso){
+
+  if(!iso)return '';
+
+  return new Date(iso).toLocaleDateString('en-GB',{
+    day:'numeric',
+    month:'long',
+    year:'numeric'
+  });
+
+}
+
+
+/* ============================================================
+   READING TIME
+============================================================ */
+
+function readTime(t){
+
+  return Math.max(
+    1,
+    Math.round(stripMedia(t).split(/\s+/).filter(Boolean).length/200)
+  );
+
+}
+
+
+/* ============================================================
+   CONTENT -> HTML (paragraphs + inline images/videos)
+============================================================ */
+
+function formatContent(text){
+
+  return String(text||'')
+    .split('\n')
+    .map(l=>l.trim())
+    .filter(Boolean)
+    .map(line=>{
+
+      const m=line.match(MEDIA_LINE);
+
+      if(m){
+        return renderMedia(m[1].toLowerCase(),parseAttrs(m[2]));
+      }
+
+      return`<p>${esc(line)}</p>`;
+
+    })
+    .join('');
+
+}
+
+</script>
+
+</body>
+</html>
